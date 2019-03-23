@@ -1,0 +1,125 @@
+<html>
+
+<head>
+    <title>Graph Reader</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+    <div class="header">
+        <% if(loggedIn) { %>
+        <h1>Welcome, <%= user.name %></h1>
+        <% } else { %>
+        <h1>Welcome to the Graph Reader</h1>
+        <% } %>
+
+    </div>
+    <main>
+        <% if(!loggedIn) { %>
+        <div class="loginWindow">
+            <button onclick="login()">Log in to see your data</button>
+        </div>
+        <% } else { %>
+        <div class="infoWindow">
+            <div class="personalInfo">
+                <h1>Your information</h1>
+                <table>
+                    <tr>
+                        <td class="item">Name</td>
+                        <td subject="name" <% if(editableUser) { %>contenteditable onfocus="getContentInMemory(this)" onfocusout="saveValue(this)" <% } %>><%= user.name %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">Phone Number</td>
+                        <td subject="phone" <% if(editableUser) { %>contenteditable onfocus="getContentInMemory(this)" onfocusout="saveValue(this)"<% } %>><%= user.phone %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">E-Mail Address</td>
+                        <td><%= user.email %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">ID</td>
+                        <td><%= user.id %></td>
+                    </tr>
+                </table>
+                <% if(!editableUser) { %>
+                <button onclick="login('editing')">Enable live editing</button>
+                <% } %>
+            </div>
+        </div>
+        <div class="kpiwindow">
+            <div class="kpis">
+                <h1><%= user.name %>s KPIs</h1>
+                <% if(userKPIsEnabled) { %>
+                <table>
+                    <tr>
+                        <td class="item">Meetings this Month</td>
+                        <td><%= userKPIs.thisMonthMeetings %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">Overall time in meetings last Month</td>
+                        <td><%= userKPIs.lastMonthMeetingLength %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">Mails sent</td>
+                        <td><%= userKPIs.mailsSent %></td>
+                    </tr>
+                </table>
+                <% } else { %>
+                <button onclick="login('userKPIs')">Enable additional permissions</button>
+                <% } %>
+
+            </div>
+            <div class="kpis">
+                <h1>Tenant KPIs</h1>
+                <% if(tenantEnabled) { %>
+                <table>
+                    <tr>
+                        <td class="item">Users in tenant</td>
+                        <td><%= tenant.users %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">Most mail-active user</td>
+                        <td><%= tenant.mailLeader %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">Mails sent</td>
+                        <td><%= tenant.mailsSent %></td>
+                    </tr>
+                    <tr>
+                        <td class="item">Most recent log-in to system</td>
+                        <td><%= tenant.mailsSent %></td>
+                    </tr>
+                </table>
+                <% } else { %>
+                <button onclick="login('tenantKPIs')">Enable additional permissions</button>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+    </main>
+
+    <script>
+        let editWord = "";
+
+        function login(to) {
+            window.location = window.location + "login?usecase=" + to;
+        }
+
+        function getContentInMemory(el) {
+            editWord = el.innerText;
+        }
+        
+        function saveValue(el) {
+            if(el.innerText == editWord) return;
+            let xhttp = new XMLHttpRequest;
+            let query = "";
+            if(el.getAttribute("subject") == "name") query = "name=" + el.innerText;
+            else if (el.getAttribute("subject") == "phone") query = "phone=" + el.innerText;
+            xhttp.open("POST","/api/user/update?"+query);
+            xhttp.send();
+        }
+    </script>
+</body>
+
+</html>

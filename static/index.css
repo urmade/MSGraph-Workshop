@@ -1,0 +1,68 @@
+body {
+    font-family: "Segoe",'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.header {
+    width: 100%;
+    height: 20%;
+    background-color: #0078D4;
+    color: white;
+    display: flex;
+    vertical-align: middle;
+    align-items: center;
+}
+.header h1 {
+    margin-left: auto;
+    margin-right: auto;
+}
+main {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    align-items: center;
+}
+
+.loginWindow {
+    margin-left: auto;
+    margin-right: auto;
+}
+button {
+    padding: 20px;
+    background-color: #0078D4;
+    border: 0;
+    color: white;
+    transition: .5s all;
+}
+button:hover {
+    cursor: pointer;
+    background-color: #106EBE;
+}
+
+.infoWindow {
+    margin: 0 50px;
+    width: 50%;
+}
+.personalInfo {
+    width: 100%;
+    text-align: center;
+}
+table td {
+    margin: 0 10px;
+}
+.item {
+    padding: 10px;
+    margin-right: 10px;
+    display: flex;
+    color: white;
+    background-color: #0078D4;
+}
+.kpiwindow {
+    width: 50%;
+    height: 100%;
+}
+.kpis {
+    text-align: center;
+    width: 100%;
+    height: 45%;
+}
