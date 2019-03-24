@@ -1,1 +1,1 @@
-The working solution source code to the Workshop.
+The working solution source code to the Workshop. Add a .env file in the root with following attributes: CLIENT_ID, CLIENT_SECRET, TENANT_ID, and REDIRECT_URL (full URL including http...).
