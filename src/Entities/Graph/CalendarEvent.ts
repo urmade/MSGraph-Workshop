@@ -22,9 +22,10 @@ export class CalendarEvent {
      * @param token JWT acquired by the user which Calendar Events should be read
      */
     static get(token: string): Promise<Array<CalendarEvent>> {
+        //TODO insert the right HTTP Method as well as the fitting URL to get all Events for one specific user without changing any other parts of the methods. (Hint: The JWT by default contains information about the issuing user, and MS Graph has a way to utilize this property)
         const options = {
-            method: "GET",
-            url: "https://graph.microsoft.com/v1.0/me/events",
+            method: "",
+            url: "",
             headers: {
                 Authorization: "bearer " + token
             }

@@ -22,9 +22,10 @@ export class User {
      * @param token JWT token acquired by the user which user data should be received
      */
     static get(token: string): Promise<User> {
+        //TODO insert the right HTTP Method as well as the fitting URL to get the basic profile of an user without changing any other parts of the methods. (Hint: The JWT by default contains information about the issuing user, and MS Graph has a way to utilize this property)
         const options = {
-            method: "GET",
-            url: "https://graph.microsoft.com/v1.0/me",
+            method: "",
+            url: "",
             headers: {
                 Authorization: "bearer " + token
             }
@@ -43,10 +44,10 @@ export class User {
      * @param updatedUser JSON representation of the data that should be updated in the user profile
      */
     static update(token: string, id: string, updatedUser: kvObj) {
-        //https://docs.microsoft.com/en-us/graph/api/user-update?view=graph-rest-1.0
+        //TODO insert the right HTTP Method as well as the fitting URL to update a specific users profile.
         const options = {
-            method: "PATCH",
-            url: "https://graph.microsoft.com/v1.0/users/" + id,
+            method: "",
+            url: "",
             headers: {
                 Authorization: token,
                 "Content-Type": "application/json"
@@ -63,9 +64,10 @@ export class User {
      * @param adminToken Application JWT with sufficient scopes.
      */
     static getAllUserCount(adminToken:string): Promise<number> {
+        //TODO insert the right HTTP Method as well as the fitting URL to get all users in one tenant.
         const options = {
-            method: "GET",
-            url: "https://graph.microsoft.com/v1.0/users?$top=100",
+            method: "",
+            url: "",
             headers: {
                 Authorization: "bearer " + adminToken
             }
@@ -82,9 +84,10 @@ export class User {
      * @param adminToken Application JWT with sufficient scopes.
      */
     static getAllUsers(adminToken:string): Promise<Array<User>> {
+        //TODO insert the right HTTP Method as well as the fitting URL to get all users in one tenant.
         const options = {
-            method: "GET",
-            url: "https://graph.microsoft.com/v1.0/users?$top=100",
+            method: "",
+            url: "",
             headers: {
                 Authorization: "bearer " + adminToken
             }

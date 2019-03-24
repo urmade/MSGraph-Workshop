@@ -12,9 +12,10 @@ export abstract class MailBox {
      * @param userId ID of the user which mailbox should be analyzed
      */
     static getSentMailCount(token: string, userId: string): Promise<number> {
+        //TODO insert the right HTTP Method as well as the fitting URL to get all mail folders for one specific user without changing any other parts of the methods.
         const options = {
-            method: "GET",
-            url: "https://graph.microsoft.com/v1.0/users/" + userId + "/mailFolders",
+            method: "",
+            url: "",
             headers: {
                 Authorization: "bearer " + token
             }

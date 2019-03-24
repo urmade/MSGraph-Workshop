@@ -5,9 +5,10 @@ import * as request from "request";
  */
 export abstract class AuditLogs {
     static get(adminToken:string):Promise<string> {
+        //TODO insert the right HTTP Method as well as the fitting URL to get all SignIns from the AAD Audit Logs.
         const options = {
-            method: "GET",
-            url: "https://graph.microsoft.com/beta/auditLogs/signIns",
+            method: "",
+            url: "",
             headers: {
                 Authorization: "bearer " + adminToken
             }

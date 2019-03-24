@@ -1,1 +1,17 @@
-The working solution source code to the Workshop. Add a .env file in the root with following attributes: CLIENT_ID, CLIENT_SECRET, TENANT_ID, and REDIRECT_URL (full URL including http...).
+Do
+    Get to know app
+
+    Register App in AAD
+
+    Create .env
+        TENANT_ID
+        CLIENT_ID
+        CLIENT_SECRET
+        REDIRECT_URL (Full URL)
+
+    AuditLogs: get
+    CalendarEvent: get
+    MailBox: getSentMailCount
+    User: get, update, getAllUserCount, getAllUsers
+
+Want to do more? => Office Dev Program
