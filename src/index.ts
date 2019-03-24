@@ -2,7 +2,12 @@ import * as express from "express";
 import * as request from "request";
 import * as env from "dotenv";
 import * as cookies from "cookie-parser";
-import { Session } from "./SessionStore/session";
+
+import { Session } from "./Entities/Graph/Session";
+import { User } from "./Entities/Graph/user";
+
+import { User as UserKPI } from "./Entities/KPI/User";
+import { Tenant as TenantKPI } from "./Entities/KPI/Tenant";
 
 env.config();
 
@@ -18,76 +23,85 @@ app.use(cookies(secret));
 let sessions = new Map<string, Session>();
 
 app.get("/", (req, res) => {
+    //Check if the user is logged in
     if (req.signedCookies.s && sessions.has(req.signedCookies.s)) {
         let session = sessions.get(req.signedCookies.s);
-        if (!checkTokenValidity(session.expires)) {
+        //Check if the session Bearer token is expired. If true, redirect to login page
+        if (!session.checkValidity()) {
             res.redirect("/login");
             return;
         }
 
-        getUser(session.currAuthToken).then(user => {
-            let userObj: { [key: string]: string } = {
-                name: user.displayName,
-                email: user.mail,
-                id: user.id,
-                jobTitle: user.jobTitle,
-                phone: user.mobilePhone
-            };
+        //Get basic User profile
+        User.get(session.currAuthToken).then(user => {
 
-            const permissions = checkTokenCapabilites(session.tokenPayload);
-            if(permissions.userKPIsEnabled) {
-                getCalendarEvents(req.signedCookies.s).then(events => {
-                    let userkpi = {
-                        thisMonthMeetings: 0,
-                        lastMonthMeetingLength: 0,
-                        mailsSent: 0
-                    }
-                    if(events) {
-                        userkpi = {
-                            thisMonthMeetings: events.filter(ev => {
-                                let start = new Date(ev.start.dateTime);
-                                return !(start < new Date(new Date().getFullYear(),new Date().getMonth(),1));
-                            }).length,
-                            lastMonthMeetingLength: events.filter(ev => {
-                                let start = new Date(ev.start.dateTime);
-                                return !(start < new Date(new Date().getFullYear(),new Date().getMonth()-1,1));
-                            }).reduce((acc, ev) => {
-                                return acc += new Date(ev.end.dateTime).getTime() - new Date(ev.start.dateTime).getTime();
-                            },0),
-                            mailsSent: 3
-                        }
-                    }
-                    
-                    let tenant = {
-                        users: "3",
-                        mailLeader: "Spammer",
-                        mailsSent: "40"
-                    };
-                    res.render("index", {
-                        editableUser: permissions.editableUser,
-                        loggedIn: true,
-                        //How many users in tenant, list all groups, get all occupied data in GB
-                        tenantEnabled: permissions.tenantEnabled,
-                        userKPIsEnabled: permissions.userKPIsEnabled,
-                        user: userObj,
-                        tenant: tenant,
-                        userKPIs: userkpi
-                    });
-                })
+            //Check for further priviledges
+            const hasAdminPriviledge = sessions.has(process.env.CLIENT_ID);
+            const permissions = session.checkCapabilities();
+            //If the user has personal KPIs enabled
+            if (permissions.userKPIsEnabled) {
+                let adminSession = sessions.get(process.env.CLIENT_ID);
+                //Check if the application is logged in and, if true, has sufficient permissions to gather tenant KPIs
+                if (hasAdminPriviledge && adminSession.checkCapabilities().tenantEnabled) {
+                    //Get User and Tenant KPIs
+                    Promise.all([
+                        UserKPI.get(session),
+                        TenantKPI.get(adminSession)
+                    ]).then(values => {
+                        //Render the web page with tenant and user KPIs
+                        res.render("index", {
+                            editableUser: permissions.editableUser,
+                            tenantEnabled: true,
+                            userKPIsEnabled: true,
+                            user: user,
+                            userKPIs: values[0],
+                            tenant: values[1]
+                        });
+                    })
+                }
+                //Render only User KPIs
+                else {
+                    //Get user KPIs and render Web Page with User KPIs
+                    UserKPI.get(session).then(userKPIs => {
+                        res.render("index", {
+                            editableUser: permissions.editableUser,
+                            tenantEnabled: false,
+                            userKPIsEnabled: true,
+                            user: user,
+                            userKPIs: userKPIs
+                        });
+                    })
+                }
             }
-            else res.render("index", {
-                editableUser: permissions.editableUser,
-                loggedIn: true,
-                //How many users in tenant, list all groups, get all occupied data in GB
-                tenantEnabled: permissions.tenantEnabled,
-                userKPIsEnabled: permissions.userKPIsEnabled,
-                user: userObj
-            });
-        });
-
+            //If the user has no personal KPIs enabled but the application is logged in
+            else if (hasAdminPriviledge) {
+                //If the app has sufficient permissions to gather Tenant KPIs
+                if (sessions.get(process.env.CLIENT_ID).checkCapabilities().tenantEnabled) {
+                    //Get Tenant KPIs and render page
+                    TenantKPI.get(sessions.get(process.env.CLIENT_ID)).then(tenantKPIs => {
+                        res.render("index", {
+                            editableUser: permissions.editableUser,
+                            tenantEnabled: true,
+                            userKPIsEnabled: false,
+                            user: user,
+                            tenant: tenantKPIs
+                        });
+                    })
+                }
+            }
+            //If neiter user KPIs nor Tenant KPIs are enabled, just render the basic Web page with personal user info
+            else {
+                res.render("index", {
+                    editableUser: permissions.editableUser,
+                    tenantEnabled: false,
+                    userKPIsEnabled: false,
+                    user: user
+                });
+            }
+        })
     }
+    //If the user is not yet logged in, redirect him to the login page
     else res.redirect("/login");
-
 })
 app.get("/login", (req, res) => {
     //The default scope is always user.read (Get users profile information)
@@ -95,7 +109,6 @@ app.get("/login", (req, res) => {
     //Check if the login endpoint was called with the usecase query parameter (used to ask for additional scopes)
     if (req.query.usecase) {
         switch (req.query.usecase) {
-            case "tenantKPIs": scope = "mail.read.All"; break;
             case "userKPIs": scope = "mail.read calendars.read"; break;
             case "editing": scope = "user.readWrite"; break;
             default: break;
@@ -159,7 +172,6 @@ app.get("/login", (req, res) => {
         //[Code_challenge_method] Used for Security checks done by your app
     );
 });
-
 app.get("/api/callback", (req, res) => {
     //The authentification code is passed to the redirect url as a query parameter called 'code'
     const authCode: string = req.query.code;
@@ -210,95 +222,30 @@ app.get("/api/callback", (req, res) => {
         }
     });
 });
+
+//Endpoint to trigger login as application
+app.get("/api/appToken", (req, res) => {
+    Session.logInAsApplication().then(session => {
+        sessions.set(session.id, session);
+        res.status(200).send("Successful");
+    })
+})
+
+//Endpoint to trigger update of user phone number in AAD
 app.post("/api/user/update", (req, res) => {
     if (sessions.has(req.signedCookies.s)) {
-        if(req.query.name) updateUser(req.signedCookies.s, {displayName: req.query.name}) ;
-        else if(req.query.phone) updateUser(req.signedCookies.s, {mobilePhone: req.query.phone}) ;
-        res.sendStatus(200);
+        const session = sessions.get(req.signedCookies.s);
+        if (session.checkCapabilities().editableUser) {
+            //If no phone parameter is provided, do nothing
+            if (req.query.phone) User.update(session.currAuthToken, session.tokenPayload.oid, { mobilePhone: req.query.phone });
+            res.sendStatus(200);
+        }
+        //If the provided token has no user.ReadWrite scope, the operation will fail
+        else throw "Refused UpdateUser: Permissions missing!";
     }
+    //If the user is not logged in, send a Forbidden answer
     else res.send(403);
 })
 
 
-function checkTokenCapabilites(tokenPayload: { [key: string]: string }): { editableUser: boolean, loggedIn: boolean, tenantEnabled: boolean, userKPIsEnabled: boolean } {
-    let permissionString = tokenPayload.scp.toLowerCase();
-    let tokenPermissions = {
-        editableUser: false,
-        loggedIn: true,
-        tenantEnabled: false,
-        userKPIsEnabled: false
-    }
-    if (permissionString.includes("user.readwrite")) tokenPermissions.editableUser = true;
-    if (
-        permissionString.includes("user.read.all") &&
-        permissionString.includes("files.read.all") &&
-        permissionString.includes("group.read.all") &&
-        permissionString.includes("mail.read") &&
-        permissionString.includes("auditlog.read.all")
-    ) tokenPermissions.tenantEnabled = true;
-    if (
-        permissionString.includes("calendars.read") &&
-        permissionString.includes("mail.read")
-    ) tokenPermissions.userKPIsEnabled = true;
-
-    return tokenPermissions;
-}
-
-function checkTokenValidity(tokenExpiration: Date): boolean {
-    if (Date.now() - tokenExpiration.getTime() >= 3600000) {
-        return false;
-    }
-    return true;
-}
-function getUser(token: string): Promise<any> {
-    const options = {
-        method: "GET",
-        url: "https://graph.microsoft.com/v1.0/me",
-        headers: {
-            Authorization: "bearer " + token
-        }
-    };
-    return new Promise((resolve, reject) => {
-        request(options, (error, response, body) => {
-            if (error) throw error;
-            resolve(JSON.parse(body));
-        })
-    })
-}
-function updateUser(sessionId: string, updatedUser: { [key:string]:string }) {
-    //https://docs.microsoft.com/en-us/graph/api/user-update?view=graph-rest-1.0
-    const session = sessions.get(sessionId);
-    if (checkTokenCapabilites(session.tokenPayload).editableUser) {
-        const bearer = sessions.get(sessionId).currAuthToken;
-        const options = {
-            method: "PATCH",
-            url: "https://graph.microsoft.com/v1.0/users/"+sessions.get(sessionId).tokenPayload.oid,
-            headers: {
-                Authorization: bearer,
-                "Content-Type": "application/json"
-            },
-            json: updatedUser
-        };
-        request(options, (error, response, body) => {
-            if (error) throw error;
-        })
-    }
-    else throw "updateUser refused: Additional permissions required!";
-}
-function getCalendarEvents(sessionId:string): Promise<Array<{[key:string]:any}>> {
-    const session = sessions.get(sessionId);
-        const options = {
-            method: "GET",
-            url: "https://graph.microsoft.com/v1.0/me/events",
-            headers: {
-                Authorization: "bearer " + session.currAuthToken
-            }
-        };
-        return new Promise((resolve, reject) => {
-            request(options, (error, response, body) => {
-                if (error) throw error;
-                resolve(body.value);
-            })
-        })
-}
 app.listen(process.env.PORT || 3500);
