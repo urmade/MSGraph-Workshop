@@ -8,30 +8,22 @@
 
 <body>
     <div class="header">
-        <% if(loggedIn) { %>
         <h1>Welcome, <%= user.name %></h1>
-        <% } else { %>
-        <h1>Welcome to the Graph Reader</h1>
-        <% } %>
 
     </div>
     <main>
-        <% if(!loggedIn) { %>
-        <div class="loginWindow">
-            <button onclick="login()">Log in to see your data</button>
-        </div>
-        <% } else { %>
         <div class="infoWindow">
             <div class="personalInfo">
                 <h1>Your information</h1>
                 <table>
                     <tr>
                         <td class="item">Name</td>
-                        <td subject="name" <% if(editableUser) { %>contenteditable onfocus="getContentInMemory(this)" onfocusout="saveValue(this)" <% } %>><%= user.name %></td>
+                        <td subject="name"><%= user.name %></td>
                     </tr>
                     <tr>
                         <td class="item">Phone Number</td>
-                        <td subject="phone" <% if(editableUser) { %>contenteditable onfocus="getContentInMemory(this)" onfocusout="saveValue(this)"<% } %>><%= user.phone %></td>
+                        <td subject="phone" <% if(editableUser) { %>contenteditable onfocus="getContentInMemory(this)"
+                            onfocusout="saveValue(this)" <% } %>><%= user.phone %></td>
                     </tr>
                     <tr>
                         <td class="item">E-Mail Address</td>
@@ -43,7 +35,7 @@
                     </tr>
                 </table>
                 <% if(!editableUser) { %>
-                <button onclick="login('editing')">Enable live editing</button>
+                <button onclick="login('editing')">Enable phone number editing</button>
                 <% } %>
             </div>
         </div>
@@ -58,7 +50,7 @@
                     </tr>
                     <tr>
                         <td class="item">Overall time in meetings last Month</td>
-                        <td><%= userKPIs.lastMonthMeetingLength %></td>
+                        <td><%= userKPIs.lastMonthMeetingLength %> Stunden</td>
                     </tr>
                     <tr>
                         <td class="item">Mails sent</td>
@@ -83,20 +75,19 @@
                         <td><%= tenant.mailLeader %></td>
                     </tr>
                     <tr>
-                        <td class="item">Mails sent</td>
+                        <td class="item">Overall Mails sent</td>
                         <td><%= tenant.mailsSent %></td>
                     </tr>
                     <tr>
                         <td class="item">Most recent log-in to system</td>
-                        <td><%= tenant.mailsSent %></td>
+                        <td><%= tenant.lastLogin %></td>
                     </tr>
                 </table>
                 <% } else { %>
-                <button onclick="login('tenantKPIs')">Enable additional permissions</button>
+                <button onclick="logIntoTenant(this)">Enable additional permissions</button>
                 <% } %>
             </div>
         </div>
-        <% } %>
     </main>
 
     <script>
@@ -105,18 +96,33 @@
         function login(to) {
             window.location = window.location + "login?usecase=" + to;
         }
+        function logIntoTenant(el) {
+            let xhttp = new XMLHttpRequest;
+            el.disabled = true;
+            el.style.backgroundColor = "gainsboro";
+            el.style.color = "black";
+            el.innerText = "Logging in...";
+            xhttp.onreadystatechange = () => {
+                if (xhttp.readyState === 4) {
+                    console.log("Got response " + xhttp.response);
+                    location.reload();
+                }
+            }
+            xhttp.open("GET", "/api/appToken");
+            xhttp.send();
+        }
 
         function getContentInMemory(el) {
             editWord = el.innerText;
         }
-        
+
         function saveValue(el) {
-            if(el.innerText == editWord) return;
+            if (el.innerText == editWord) return;
             let xhttp = new XMLHttpRequest;
             let query = "";
-            if(el.getAttribute("subject") == "name") query = "name=" + el.innerText;
+            if (el.getAttribute("subject") == "name") query = "name=" + el.innerText;
             else if (el.getAttribute("subject") == "phone") query = "phone=" + el.innerText;
-            xhttp.open("POST","/api/user/update?"+query);
+            xhttp.open("POST", "/api/user/update?" + query);
             xhttp.send();
         }
     </script>
