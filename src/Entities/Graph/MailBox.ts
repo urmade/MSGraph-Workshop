@@ -7,7 +7,7 @@ import { User } from "./User";
 export abstract class MailBox {
 
     /**
-     * Returns the number of elements in the users "Sent Items" folder
+     * Returns the number of elements in the users "Sent Items" folder by getting all mail folders and reading out the property "totalItemCount".
      * @param token JWT acquired by the user which mailbox should be analyzed
      * @param userId ID of the user which mailbox should be analyzed
      */
