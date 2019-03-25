@@ -32,7 +32,7 @@ Your app is (for now) completely set up. Go back to the source code on your comp
 TENANT_ID=<yourtenant>.onmicrosoft.com
 CLIENT_ID=
 CLIENT_SECRET=
-CALLBACK_URL=http://localhost:3500/api/callback
+REDIRECT_URL=http://localhost:3500/api/callback
 ````
 
 ## Connect your app to MS Graph
@@ -45,15 +45,15 @@ to look for the suiting endpoints.
     * get() in *src -> Entities -> Graph -> CalendarEvent.ts*
     * getSentMailCount() in *src -> Entities -> Graph -> MailBox.ts*
 4. To enable Tenant KPIs:
-    1. Request application permissions for your app in the Azure Portal. Go back to your Application Registration in Azure Active Directory and click on *Required permissions*. Click *Microsoft Graph* and select the following permissions:
+    1. Request application permissions for your app in the Azure Portal. Go back to your Application Registration in Azure Active Directory and click on *Required permissions*. Click *Microsoft Graph* and select the following permissions (Be very precise and take exactly the permissions specified, not the readWrite alternative):
         * Read files in all site collections **(files.read.all)**
         * Read all users' full profiles **(user.read.all)**
         * Read all groups **(group.read.all)**
         * Read mail in all mailboxes **(mail.read)**
         * Read all audit log data **(auditlog.read.all)**
-    2. Implement these calls:
+    2. Inform your instructor that you have set Application permissions in the Azure Active Directory Portal (he will then grant you these permissions in the portal).    
+    3. Implement these calls:
         * getAllUsers() in *src -> Entities -> Graph -> User.ts*
-        * getAllUserCount() in *src -> Entities -> Graph -> User.ts*
         * get() in *src -> Entities -> Graph -> AuditLogs.ts*
 
 ## Further resources

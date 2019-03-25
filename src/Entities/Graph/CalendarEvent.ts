@@ -33,8 +33,10 @@ export class CalendarEvent {
         return new Promise((resolve, reject) => {
             request(options, (error, response, body) => {
                 if (error) throw error;
+                body = JSON.parse(body);
+                if(body.error) console.error(body.error);
                 let eventArr: Array<CalendarEvent> = [];
-                JSON.parse(body).value.forEach((rawEvent: { [key: string]: any }) => {
+                body.value.forEach((rawEvent: { [key: string]: any }) => {
                     eventArr.push(new CalendarEvent(rawEvent));
                 });
                 resolve(eventArr);

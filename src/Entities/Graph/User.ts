@@ -18,7 +18,7 @@ export class User {
     }
 
     /**
-     * Method to get an users profile data through an JWT that was acquired by that user.
+     * Method to get the profile data of the user who acquired the token through an JWT that was acquired by that user.
      * @param token JWT token acquired by the user which user data should be received
      */
     static get(token: string): Promise<User> {
@@ -33,6 +33,8 @@ export class User {
         return new Promise((resolve, reject) => {
             request(options, (error, response, body) => {
                 if (error) throw error;
+                body = JSON.parse(body);
+                if(body.error) console.error(body.error);
                 resolve(new User(JSON.parse(body)));
             })
         })
@@ -56,27 +58,9 @@ export class User {
         };
         request(options, (error, response, body) => {
             if (error) throw error;
+            body = JSON.parse(body);
+            if(body.error) console.error(body.error);
         })
-    }
-
-    /**
-     * Function to get the number of all users in the system (up to 100 users).
-     * @param adminToken Application JWT with sufficient scopes.
-     */
-    static getAllUserCount(adminToken:string): Promise<number> {
-        //TODO insert the right HTTP Method as well as the fitting URL to get all users in one tenant.
-        const options = {
-            method: "",
-            url: "",
-            headers: {
-                Authorization: "bearer " + adminToken
-            }
-        };
-        return new Promise((resolve,reject) => {
-            request(options,(error,response,body) => {
-                resolve(JSON.parse(body).value.length);
-            })
-        })   
     }
 
     /**
@@ -94,12 +78,26 @@ export class User {
         };
         return new Promise((resolve,reject) => {
             request(options,(error,response,body) => {
+                if(error) throw error;
                 let userArr = [];
                 body = JSON.parse(body);
+                if(body.error) console.error(body.error);
                 for(let i = 0; i < body.value.length; i++) {
                     userArr.push(new User(body.value[i]));
                 }
                 resolve(userArr);
+            })
+        })
+    }
+
+    /**
+     * Function to get the number of all users in the system (up to 100 users).
+     * @param adminToken Application JWT with sufficient scopes.
+     */
+    static getAllUserCount(adminToken:string): Promise<number> {
+        return new Promise((resolve,reject) => {
+            this.getAllUsers(adminToken).then(users => {
+                resolve(users.length);
             })
         })
     }

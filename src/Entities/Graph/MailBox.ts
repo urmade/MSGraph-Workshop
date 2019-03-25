@@ -26,6 +26,7 @@ export abstract class MailBox {
                 body = JSON.parse(body);
                 //Error could happen e.g. because the user hasn't accessed his mailbox yet, meaning it does not exist yet
                 if (body.error) {
+                    console.error(body.error);
                     resolve(0);
                     return;
                 }

@@ -1,0 +1,5 @@
+dest
+def
+node_modules
+.env
+.vscode
