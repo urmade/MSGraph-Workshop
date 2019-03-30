@@ -1,0 +1,32 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+  displayName: 'npm install'
+
+- script: |
+    tsc
+  displayName: 'Compile Typescript'
+
+- task: AzureRmWebAppDeployment@3
+  inputs:
+    azureSubscription: 'c03b86a4-0386-41e6-bf99-7993494d5151'
+    WebAppName: '<msgraphhack'
+    Package: '$(System.DefaultWorkingDirectory)'
+    GenerateWebConfig: true
+    WebConfigParameters: '-Handler iisnode -NodeStartFile dest/index.js -appType node'
