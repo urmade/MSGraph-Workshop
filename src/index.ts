@@ -248,4 +248,6 @@ app.post("/api/user/update", (req, res) => {
 })
 
 
-app.listen(process.env.PORT || 3500);
+app.listen(process.env.PORT || 3500, () => {
+    console.log("Server running!");
+});
