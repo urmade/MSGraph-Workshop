@@ -33,7 +33,6 @@ export class User {
         return new Promise((resolve, reject) => {
             request(options, (error, response, body) => {
                 if (error) throw error;
-                body = JSON.parse(body);
                 if(body.error) console.error(body.error);
                 resolve(new User(JSON.parse(body)));
             })

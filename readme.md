@@ -7,6 +7,7 @@ This lab is completely implemented in TypeScript, however all the concepts prese
 ## Set up the lab
 
 To get started, fork or clone this repository to your computer. You will need Node.js installed to run this project, all other developer dependencies are delivered through the package.json. All dependencies are used for general development convenience, the MS Graph implementation is only dependent on the request module (but could potentially be implemented with the native Node https module as well).
+__Please read carefully through the instructions before starting to code!__ A lot of common questions are answered already in the instructions, and you will get errors in your app if you don't follow the instructions.
 
 ## Get to know the App
 
@@ -26,7 +27,7 @@ When you click on "Enable additional permissions" beneath the Tenant KPIs, the A
 
 To access the Microsoft Graph, you will always need an Azure Active Directory Application that handles permission management for you. To register a new application, visit portal.azure.com and log in with an user that is part of the tenant in which you want to use the application. After successful login, navigate to *Azure Active Directory* (usually in the favorites section to the left, otherwise you can search for it). Here click on *App registrations* and then *New application registration*. Give your app a name and a Sign-On URL (enter http://localhost:3500/api/callback here). Then click on create. In the upcoming window, save the *Application ID* (also called Client ID) in a text document. We will need that later. Then click on *Settings* and from here on *Keys*. Create a new password and save it to the text document (Make sure to do this as you won't be able to view the password again in the portal!).
 
-Your app is (for now) completely set up. Go back to the source code on your computer and add a .env file in the root directory of the code. It should have the following structure:
+Your app is (for now) completely set up. Go back to the source code on your computer and __add a .env file__ in the root directory of the code. It should have the following structure:
 
 ````
 TENANT_ID=<yourtenant>.onmicrosoft.com
@@ -39,7 +40,7 @@ REDIRECT_URL=http://localhost:3500/api/callback
 
 When starting the app now, you will get to the Microsoft login page. But the app will not be able to load as it has to query the users basic profile data. So let's get into implementing our MS Graph connectors. Note: It is your responsibility to find the right endpoints to query the data. Use https://docs.microsoft.com/en-us/graph/api/overview
 to look for the suiting endpoints.
-1. To get the app to loading, you have to implement the get() function in *src -> Entities -> Graph -> User.ts*
+1. __To get the app to loading__, you have to implement the get() function in *src -> Entities -> Graph -> User.ts*
 2. To enable phone number editing, implement the update() function in *src -> Entities -> Graph -> User.ts*
 3. To enable User KPIs, implement:
     * get() in *src -> Entities -> Graph -> CalendarEvent.ts*
