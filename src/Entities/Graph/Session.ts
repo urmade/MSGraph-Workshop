@@ -64,7 +64,7 @@ export class Session {
     static logInAsApplication():Promise<Session> {
         const options = {
             method: "POST",
-            url: "https://login.microsoftonline.com/urmade.onmicrosoft.com/oauth2/v2.0/token",
+            url: "https://login.microsoftonline.com/"+process.env.TENANT_ID+"/oauth2/v2.0/token",
             form: {
                 grant_type: "client_credentials",
                 client_id: process.env.CLIENT_ID,
